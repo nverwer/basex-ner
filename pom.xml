@@ -1,12 +1,14 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   
   <groupId>com.rakensi</groupId>
   <artifactId>basex-ner-xar</artifactId>
-  <version>1.0.0</version>
+  <version>1.0.1</version>
 
   <name>Named Entity Recognition for BaseX</name>
-  <description>Named Entity Recognition (NER) package for BaseX</description>
+  <description>Named Entity Recognition (NER) for BaseX</description>
   <url>https://github.com/nverwer/basex-ner-xar</url>
 
   <organization>
@@ -24,19 +26,11 @@
 
     <smax.groupId>org.greenmercury</smax.groupId>
     <smax.artifactId>SMAX</smax.artifactId>
-    <smax.version>1.0.2</smax.version>
+    <smax.version>1.0.3</smax.version>
 
     <ner.groupId>com.rakensi</ner.groupId>
     <ner.artifactId>XML-NER</ner.artifactId>
-    <ner.version>1.0.2</ner.version>
-
-    <!-- used in the EXPath Package Descriptor -->
-    <package-title>${project.name}</package-title>
-    <package-name>http://rakensi.com/xquery/functions/ner</package-name>
-    <package-abbrev>${project.artifactId}</package-abbrev>
-
-    <rxf.module.namespace>http://rakensi.com/xquery/functions/ner</rxf.module.namespace>
-    <!--<rxf.module.java.classname>ExtensionFunctionsModule</rxf.module.java.classname>-->
+    <ner.version>1.0.3</ner.version>
 
   </properties>
 
@@ -77,21 +71,25 @@
         </configuration>
       </plugin>
       <plugin>
-          <groupId>ro.kuberam.maven.plugins</groupId>
-          <artifactId>kuberam-expath-plugin</artifactId>
-          <executions>
-              <execution>
-                  <id>create-xar</id>
-                  <phase>package</phase>
-                  <goals>
-                      <goal>make-xar</goal>
-                  </goals>
-                  <configuration>
-                      <descriptor>xar-assembly.xml</descriptor>
-                      <finalName>${package-final-name}</finalName>
-                  </configuration>
-              </execution>
-          </executions>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-shade-plugin</artifactId>
+        <version>3.6.0</version>
+        <executions>
+          <execution>
+            <phase>package</phase>
+            <goals>
+              <goal>shade</goal>
+            </goals>
+            <configuration>
+              <artifactSet>
+                <includes>
+                  <include>${smax.groupId}:${smax.artifactId}</include>
+                  <include>${ner.groupId}:${ner.artifactId}</include>
+                </includes>
+              </artifactSet>
+            </configuration>
+          </execution>
+        </executions>
       </plugin>
       <plugin>
           <groupId>org.apache.maven.plugins</groupId>

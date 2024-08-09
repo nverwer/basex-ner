@@ -5,11 +5,13 @@ import java.net.URL;
 import java.security.InvalidParameterException;
 import java.util.Map;
 
+import org.basex.query.CompileContext;
 import org.basex.query.QueryContext;
 import org.basex.query.QueryException;
 import org.basex.query.QueryModule;
+import org.basex.query.QueryString;
+import org.basex.query.expr.Arr;
 import org.basex.query.expr.Expr;
-import org.basex.query.func.StandardFunc;
 import org.basex.query.util.list.AnnList;
 import org.basex.query.value.Value;
 import org.basex.query.value.item.FuncItem;
@@ -21,7 +23,9 @@ import org.basex.query.value.node.FNode;
 import org.basex.query.value.type.FuncType;
 import org.basex.query.value.type.SeqType;
 import org.basex.query.var.Var;
+import org.basex.query.var.VarRef;
 import org.basex.query.var.VarScope;
+import org.basex.util.hash.IntObjMap;
 import org.basex.util.hash.TokenMap;
 import org.greenmercury.smax.SmaxDocument;
 import org.greenmercury.smax.SmaxElement;
@@ -33,7 +37,7 @@ import org.w3c.dom.Node;
 import com.rakensi.xml.ner.Logger;
 import com.rakensi.xml.ner.NamedEntityRecognition;
 
-public class Functions extends QueryModule
+public class NamedEntityRecognitionModule extends QueryModule
 {
 
   /**
@@ -68,32 +72,38 @@ public class Functions extends QueryModule
   @Deterministic
   @ContextDependent
   public FuncItem namedEntityRecognition(Object grammar, Map<String, String> options) throws QueryException {
-    Logger logger = logger(queryContext);
-    final Var[] params = { new VarScope().addNew(new QNm("input"), SeqType.ITEM_O, queryContext, null) }; // Types of the arguments of the generated function.
-    NamedEntityRecognitionFunction nerf = new NamedEntityRecognitionFunction(logger, grammar, options);
-    final FuncType ft = FuncType.get(nerf.seqType(), SeqType.ITEM_O); // Type of the generated function.
-    return new FuncItem(null, nerf, params, AnnList.EMPTY, ft, params.length, null);
+    // Types of the arguments of the generated function.
+    final Var[] generatedFunctionParameters = { new VarScope().addNew(new QNm("input"), SeqType.ITEM_O, queryContext, null) };
+    // Type of the generated function.
+    final FuncType generatedFunctionType = FuncType.get(SeqType.NODE_ZM, generatedFunctionParameters[0].declType);
+    // The generated function.
+    NamedEntityRecognitionFunction nerf = new NamedEntityRecognitionFunction(grammar, options, generatedFunctionType, queryContext);
+    // Return a function item.
+    return new FuncItem(null, nerf, generatedFunctionParameters, AnnList.EMPTY, generatedFunctionType, generatedFunctionParameters.length, null);
   }
 
   /**
    * The generated NER matcher function.
    */
-  private static final class NamedEntityRecognitionFunction extends StandardFunc {
+  private static final class NamedEntityRecognitionFunction extends Arr {
 
-    private final Logger logger;
     private final NamedEntityRecognition ner;
+    private final Logger logger;
+    private final FuncType funcType;
 
-    protected NamedEntityRecognitionFunction(Logger logger, Object grammar, Map<String, String> options)
+    protected NamedEntityRecognitionFunction(Object grammar, Map<String, String> options, FuncType funcType, QueryContext queryContext)
     throws QueryException
     {
-      this.logger = logger;
+      super(null, funcType.declType, parameterVars(funcType, queryContext));
+      this.funcType= funcType;
+      this.logger = logger(queryContext);
       try {
         if (grammar instanceof URL) {
           this.ner = new NamedEntityRecognition((URL)grammar, options, logger);
         } else if (grammar instanceof URI) {
           this.ner = new NamedEntityRecognition(((URI)grammar).toURL(), options, logger);
-        } else if (grammar instanceof ANode) {
-          this.ner = new NamedEntityRecognition(new String(((ANode)grammar).string()), options, logger);
+        } else if (grammar instanceof Element) {
+          this.ner = new NamedEntityRecognition((Element)grammar, options, logger);
         } else if (grammar instanceof String) {
           this.ner = new NamedEntityRecognition((String)grammar, options, logger);
         } else {
@@ -104,6 +114,23 @@ public class Functions extends QueryModule
       }
     }
 
+    private NamedEntityRecognitionFunction(NamedEntityRecognition ner, FuncType funcType, QueryContext queryContext)
+    {
+      super(null, funcType.declType, parameterVars(funcType, queryContext));
+      this.funcType= funcType;
+      this.logger = logger(queryContext);
+      this.ner = ner;
+    }
+
+    private static Expr[] parameterVars(FuncType funcType, QueryContext queryContext)
+    {
+      Expr[] paramVars = new Expr[funcType.argTypes.length];
+      for (int i = 0; i < paramVars.length; ++i) {
+        paramVars[i] = new VarRef(null, new VarScope().addNew(new QNm("arg"+i), funcType.argTypes[i], queryContext, null));
+      }
+      return paramVars;
+    }
+
     /**
      * Evaluate the generated NER function.
      */
@@ -111,16 +138,16 @@ public class Functions extends QueryModule
     public Value value(final QueryContext qc)
     throws QueryException
     {
-      Expr inputExpr = arg(0);
+      Value inputValue = arg(0).value(qc);
       // Create a SMAX document with a <wrapper> root element around the input.
       SmaxDocument smaxDocument = null;
-      if (inputExpr.seqType().instanceOf(SeqType.STRING_O)) {
+      if (inputValue.seqType().instanceOf(SeqType.STRING_O)) {
         // Wrap the string in an element.
-        final String inputString = ((Str)inputExpr.value(qc)).toJava();
+        final String inputString = ((Str)inputValue).toJava();
         final SmaxElement wrapper = new SmaxElement("wrapper").setStartPos(0).setEndPos(inputString.length());
         smaxDocument = new SmaxDocument(wrapper, inputString);
-      } else if (inputExpr.seqType().instanceOf(SeqType.NODE_O)) {
-        Node inputNode = ((ANode)inputExpr).toJava();
+      } else if (inputValue.seqType().instanceOf(SeqType.NODE_O)) {
+        Node inputNode = ((ANode)inputValue).toJava();
         Element inputElement = wrap(inputNode);
         try{
           smaxDocument = DomElement.toSmax(inputElement);
@@ -128,7 +155,7 @@ public class Functions extends QueryModule
           throw new QueryException(e);
         }
       } else {
-        throw new QueryException("The generated NER function accepts a string or node, but not a "+inputExpr.seqType().typeString());
+        throw new QueryException("The generated NER function accepts a string or node, but not a "+inputValue.seqType().typeString());
       }
       // Do Named Entity Recognition on the SMAX document.
       this.ner.scan(smaxDocument);
@@ -155,6 +182,21 @@ public class Functions extends QueryModule
       Element wrapper = new VerySimpleElementImpl("wrapper");
       wrapper.appendChild(node);
       return wrapper;
+    }
+
+    /**
+     * I am not sure if this implementation is correct.
+     */
+    @Override
+    public Expr copy(CompileContext cc, IntObjMap<Var> vm)
+    {
+      return copyType(new NamedEntityRecognitionFunction(this.ner, this.funcType, cc.qc));
+    }
+
+    @Override
+    public void toString(QueryString qs)
+    {
+      qs.token("named-entity-recognition").params(exprs);
     }
 
   }
