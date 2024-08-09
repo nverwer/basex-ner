@@ -1,0 +1,4 @@
+<package xmlns="http://expath.org/ns/pkg">
+  <jar>basex-ner-xar-1.0.0.jar</jar>
+  <class>com.rakensi.basex.xquery.functions.ner.Functions</class>
+</package>
