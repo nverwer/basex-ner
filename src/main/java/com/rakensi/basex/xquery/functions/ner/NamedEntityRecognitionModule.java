@@ -36,6 +36,7 @@ import org.w3c.dom.Node;
 
 import com.rakensi.xml.ner.Logger;
 import com.rakensi.xml.ner.NamedEntityRecognition;
+import com.rakensi.xml.ner.VerySimpleElementImpl;
 
 public class NamedEntityRecognitionModule extends QueryModule
 {
@@ -148,6 +149,9 @@ public class NamedEntityRecognitionModule extends QueryModule
         smaxDocument = new SmaxDocument(wrapper, inputString);
       } else if (inputValue.seqType().instanceOf(SeqType.NODE_O)) {
         Node inputNode = ((ANode)inputValue).toJava();
+        if (inputValue.seqType().instanceOf(SeqType.DOCUMENT_NODE_O)) {
+          inputNode = inputNode.getFirstChild();
+        }
         Element inputElement = wrap(inputNode);
         try{
           smaxDocument = DomElement.toSmax(inputElement);
