@@ -2,7 +2,6 @@ package com.rakensi.basex.xquery.functions.ner;
 
 import java.net.URI;
 import java.net.URL;
-import java.security.InvalidParameterException;
 import java.util.Map;
 
 import org.basex.query.CompileContext;
@@ -108,7 +107,7 @@ public class NamedEntityRecognitionModule extends QueryModule
         } else if (grammar instanceof String) {
           this.ner = new NamedEntityRecognition((String)grammar, options, logger);
         } else {
-          throw new InvalidParameterException("The first parameter ($grammar) of named-entity-recognition can not be a "+grammar.getClass().getName());
+          throw new IllegalArgumentException("The first parameter ($grammar) of named-entity-recognition can not be a "+grammar.getClass().getName());
         }
       } catch (Exception e) {
         throw new QueryException(e);

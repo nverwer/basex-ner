@@ -2,7 +2,7 @@
   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
   xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  
+
   <groupId>com.rakensi</groupId>
   <artifactId>basex-ner-xar</artifactId>
   <version>1.0.1</version>
@@ -26,36 +26,36 @@
 
     <smax.groupId>org.greenmercury</smax.groupId>
     <smax.artifactId>SMAX</smax.artifactId>
-    <smax.version>1.0.3</smax.version>
+    <smax.version>1.0.4</smax.version>
 
     <ner.groupId>com.rakensi</ner.groupId>
     <ner.artifactId>XML-NER</ner.artifactId>
-    <ner.version>1.0.3</ner.version>
+    <ner.version>1.0.4</ner.version>
 
   </properties>
 
   <dependencies>
-    
+
     <dependency>
       <groupId>org.basex</groupId>
       <artifactId>basex</artifactId>
       <version>${basex.version}</version>
     </dependency>
-        
+
     <dependency>
       <groupId>${smax.groupId}</groupId>
       <artifactId>${smax.artifactId}</artifactId>
       <version>${smax.version}</version>
     </dependency>
-    
+
     <dependency>
       <groupId>${ner.groupId}</groupId>
       <artifactId>${ner.artifactId}</artifactId>
       <version>${ner.version}</version>
     </dependency>
 
-</dependencies>
-  
+  </dependencies>
+
   <build>
     <plugins>
       <plugin>
@@ -110,5 +110,5 @@
       </plugin>
     </plugins>
   </build>
-  
+
 </project>
