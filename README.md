@@ -1,7 +1,6 @@
 # basex-ner-xar
 
-This is not a XAR archive.
-I tried to make a XAR for BaseX, but it did not work.
+This is not a XAR archive. I tried to make a XAR for BaseX, but it did not work.
 Additionally, the [BaseX documentation](https://docs.basex.org/main/Repository#performance) says that performance will suffer,
 so I decided to make a JAR instead.
 Maybe one day I will try to make a XAR that actually works and performs well.
@@ -21,10 +20,10 @@ Start, or restart BaseX.
 
 ## Using
 
-Open eXide, and enter the following in a new XQuery document.
+Enter the following in a new XQuery document.
 
 ```
-import module namespace ner = "http://rakensi.com/xquery/functions/ner";
+import module namespace ner='com.rakensi.basex.xquery.functions.ner.NamedEntityRecognitionModule';
 let $grammar :=
   <grammar>
     <entity id="♳"><name>PET</name><name>polyethylene</name><name>terephthalate</name></entity>

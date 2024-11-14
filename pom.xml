@@ -5,7 +5,7 @@
 
   <groupId>com.rakensi</groupId>
   <artifactId>basex-ner-xar</artifactId>
-  <version>1.0.1</version>
+  <version>1.0.2</version>
 
   <name>Named Entity Recognition for BaseX</name>
   <description>Named Entity Recognition (NER) for BaseX</description>
@@ -22,7 +22,7 @@
     <maven.compiler.target>11</maven.compiler.target>
     <maven.compiler.release>11</maven.compiler.release>
 
-    <basex.version>11.0</basex.version>
+    <basex.version>11.5</basex.version>
 
     <smax.groupId>org.greenmercury</smax.groupId>
     <smax.artifactId>SMAX</smax.artifactId>
@@ -30,7 +30,7 @@
 
     <ner.groupId>com.rakensi</ner.groupId>
     <ner.artifactId>XML-NER</ner.artifactId>
-    <ner.version>1.0.4</ner.version>
+    <ner.version>1.0.5</ner.version>
 
   </properties>
 
