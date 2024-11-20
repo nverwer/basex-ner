@@ -67,6 +67,32 @@ public class NamedEntityRecognitionModule extends QueryModule
   }
 
   /**
+   * Make a NamedEntityRecognition instance.
+   * @param grammar a grammar, as a URL, URI, Element or String.
+   * @param options
+   * @param logger a very simple logger.
+   * @return a NamedEntityRecognition instance.
+   * @throws QueryException
+   */
+  private static NamedEntityRecognition ner(Object grammar, Map<String, String> options, Logger logger) throws QueryException {
+    try {
+      if (grammar instanceof URL) {
+        return new NamedEntityRecognition((URL)grammar, options, logger);
+      } else if (grammar instanceof URI) {
+        return new NamedEntityRecognition(((URI)grammar).toURL(), options, logger);
+      } else if (grammar instanceof Element) {
+        return new NamedEntityRecognition((Element)grammar, options, logger);
+      } else if (grammar instanceof String) {
+        return new NamedEntityRecognition((String)grammar, options, logger);
+      } else {
+        throw new IllegalArgumentException("The first parameter ($grammar) of named-entity-recognition can not be a "+grammar.getClass().getName());
+      }
+    } catch (Exception e) {
+      throw new QueryException(e);
+    }
+  }
+
+  /**
    * The named entity recognition function:
    * named-entity-recognition($grammar as item(), $options as map(*)?)  as  function(item()) as node()*
    */
@@ -74,12 +100,15 @@ public class NamedEntityRecognitionModule extends QueryModule
   @Deterministic
   @ContextDependent
   public FuncItem namedEntityRecognition(Object grammar, Map<String, String> options) throws QueryException {
-    // Types of the arguments of the generated function.
+    // Names and types of the arguments of the generated function.
     final Var[] generatedFunctionParameters = { new VarScope().addNew(new QNm("input"), SeqType.ITEM_O, queryContext, null) };
+    final Expr[] generatedFunctionParameterExprs = { new VarRef(null, generatedFunctionParameters[0]) };
+    // Result type of the generated function.
+    final SeqType generatedFunctionResultType = SeqType.NODE_ZM;
     // Type of the generated function.
-    final FuncType generatedFunctionType = FuncType.get(SeqType.NODE_ZM, generatedFunctionParameters[0].declType);
+    final FuncType generatedFunctionType = FuncType.get(generatedFunctionResultType, generatedFunctionParameters[0].declType);
     // The generated function.
-    NamedEntityRecognitionFunction nerf = new NamedEntityRecognitionFunction(grammar, options, generatedFunctionType, queryContext);
+    NamedEntityRecognitionFunction nerf = new NamedEntityRecognitionFunction(grammar, options, generatedFunctionResultType, generatedFunctionParameterExprs, queryContext);
     // Return a function item.
     return new FuncItem(null, nerf, generatedFunctionParameters, AnnList.EMPTY, generatedFunctionType, generatedFunctionParameters.length, null);
   }
@@ -91,46 +120,36 @@ public class NamedEntityRecognitionModule extends QueryModule
 
     private final NamedEntityRecognition ner;
     private final Logger logger;
-    private final FuncType funcType;
 
-    protected NamedEntityRecognitionFunction(Object grammar, Map<String, String> options, FuncType funcType, QueryContext queryContext)
+    /**
+     * Make a NamedEntityRecognitionFunction for a grammar and options
+     * @param grammar
+     * @param options
+     * @param funcType
+     * @param queryContext
+     * @throws QueryException
+     */
+    protected NamedEntityRecognitionFunction(Object grammar, Map<String, String> options,
+        SeqType generatedFunctionResultType, Expr[] generatedFunctionParameterExprs, QueryContext queryContext)
     throws QueryException
     {
-      super(null, funcType.declType, parameterVars(funcType, queryContext));
-      this.funcType= funcType;
+      super(null, generatedFunctionResultType, generatedFunctionParameterExprs);
       this.logger = logger(queryContext);
-      try {
-        if (grammar instanceof URL) {
-          this.ner = new NamedEntityRecognition((URL)grammar, options, logger);
-        } else if (grammar instanceof URI) {
-          this.ner = new NamedEntityRecognition(((URI)grammar).toURL(), options, logger);
-        } else if (grammar instanceof Element) {
-          this.ner = new NamedEntityRecognition((Element)grammar, options, logger);
-        } else if (grammar instanceof String) {
-          this.ner = new NamedEntityRecognition((String)grammar, options, logger);
-        } else {
-          throw new IllegalArgumentException("The first parameter ($grammar) of named-entity-recognition can not be a "+grammar.getClass().getName());
-        }
-      } catch (Exception e) {
-        throw new QueryException(e);
-      }
+      this.ner = ner(grammar, options, logger);
     }
 
-    private NamedEntityRecognitionFunction(NamedEntityRecognition ner, FuncType funcType, QueryContext queryContext)
+    /**
+     * Make a NamedEntityRecognitionFunction using properties of an existing NamedEntityRecognitionFunction.
+     * @param ner
+     * @param funcType
+     * @param queryContext
+     */
+    private NamedEntityRecognitionFunction(NamedEntityRecognition ner, Logger logger,
+        SeqType generatedFunctionResultType, Expr[] generatedFunctionParameterExprs)
     {
-      super(null, funcType.declType, parameterVars(funcType, queryContext));
-      this.funcType= funcType;
-      this.logger = logger(queryContext);
+      super(null, generatedFunctionResultType, generatedFunctionParameterExprs);
+      this.logger = logger;
       this.ner = ner;
-    }
-
-    private static Expr[] parameterVars(FuncType funcType, QueryContext queryContext)
-    {
-      Expr[] paramVars = new Expr[funcType.argTypes.length];
-      for (int i = 0; i < paramVars.length; ++i) {
-        paramVars[i] = new VarRef(null, new VarScope().addNew(new QNm("arg"+i), funcType.argTypes[i], queryContext, null));
-      }
-      return paramVars;
     }
 
     /**
@@ -189,19 +208,17 @@ public class NamedEntityRecognitionModule extends QueryModule
       return wrapper;
     }
 
-    /**
-     * I am not sure if this implementation is correct.
-     */
     @Override
     public Expr copy(CompileContext cc, IntObjMap<Var> vm)
     {
-      return copyType(new NamedEntityRecognitionFunction(this.ner, this.funcType, cc.qc));
+      Expr[] functionParameterExprs = copyAll(cc, vm, this.args());
+      return copyType(new NamedEntityRecognitionFunction(this.ner, this.logger, this.seqType(), functionParameterExprs));
     }
 
     @Override
     public void toString(QueryString qs)
     {
-      qs.token("named-entity-recognition").params(exprs);
+      qs.token("generated-named-entity-recognition-function").params(exprs);
     }
 
   }
