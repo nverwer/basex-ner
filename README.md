@@ -1,4 +1,6 @@
-# basex-ner-xar
+# basex-ner
+
+Named Entity Recognition for BaseX, using [XML-NER](https://github.com/nverwer/XML-NER).
 
 This is not a XAR archive. I tried to make a XAR for BaseX, but it did not work.
 Additionally, the [BaseX documentation](https://docs.basex.org/main/Repository#performance) says that performance will suffer,
@@ -40,6 +42,49 @@ Press the 'Eval' button. The output should look like:
 ```
 <r>RIC for <ric symbol="♵">vinyl</ric> and <ric symbol="♳">polyethylene</ric></r>
 ```
+
+### Options
+
+A map with options. The following options are recognized:
+
+* `word-chars` Characters that are significant for matching an entity name. Default is `""`.
+    Letters and digits are always significant, but characters like '.' and '-' are not.
+    A sequence of non-significant characters and/or whitespace in a text will be treated as a single space during matching.
+    This means that an entity name like "e.g." can only be recognized when '.' is in word-chars.
+    Whitespace is ignored at the start and end of an entity name, and replaced by a single significant space in the middle.
+* `no-word-before` Characters that may not immediately follow a word (next to letters and digits).
+    They cannot follow the end of a match. Default is "".
+* `no-word-after` Characters that may not immediately precede a word (next to letters and digits).
+    Matches can only start on a letter or digit, and not after noWordAfter characters. Default is "".
+* `case-insensitive-min-length` The minimum entity-length for case-insensitive matching.
+    Text fragments larger than this will be scanned case-insensitively.
+    This prevents short words to be recognized as abbreviations.
+    Set to -1 to always match case-sensitive. Set to 0 to always match case-insensitive.
+    Default is -1.
+* `fuzzy-min-length` The minimum entity-length for fuzzy matching.
+    Text fragments larger than this may contain characters that are not significant for matching.
+    This prevents short words with noise to be recognized as abbreviations.
+    Set to -1 to match exact. Set to 0 to match fuzzy.
+    Default is -1.
+* `balancing` The SMAX balancing strategy that is used when an element for a recognized entity is inserted.
+    Default is "OUTER".
+* `match-element-name` The name of the element that is inserted around matched text fragments.
+    Default is 'fn:match'.
+* `match-element-namespace-uri` The namespace URI of the match element.
+    This option must be present if the match-element-name contains a namespace prefix other than 'fn:'.
+    If the namespace prefix in 'match-element-name' is 'fn:', the default is 'http://www.w3.org/2005/xpath-functions'.
+* `match-attribute` The name of the attribute on the match element that will hold the id of the matching entity.
+    Default is 'id'.
+
+Setting case-insensitive-min-length to 4 prevents the scanner from recognizing "THE" in "Do the right thing".
+
+Setting fuzzy-min-length to 4 prevents the scanner from recognizing "C F" in "C.F. Gauss was a German mathematician".
+
+With these settings, "R S V P" would be recognized in "Put an r.s.v.p. at the end", provided that '.' is not in word-chars.
+
+Setting case-insensitive-min-length and fuzzy-min-length to 3 or less will recognize "THE" and "C F" in "c.f. the r.s.v.p.".
+
+All sequences of whitespace characters will be treated like a single space, both in the grammar input and the text that is scanned for named entities.
 
 ## See also
 
