@@ -68,6 +68,8 @@ A map with options. The following options are recognized:
     Default is -1.
 * `balancing` The SMAX balancing strategy that is used when an element for a recognized entity is inserted.
     Default is "OUTER".
+* `match-within-element` If set to the local name (without namespace prefix) of an element, only text within elements with this name will be matched.
+* `match-within-namespace` If 'parse-within-element' is set, this may be set to the namespace URI of these elements.
 * `match-element-name` The name of the element that is inserted around matched text fragments.
     Default is 'fn:match'.
 * `match-element-namespace-uri` The namespace URI of the match element.

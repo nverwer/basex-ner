@@ -5,7 +5,7 @@
 
   <groupId>com.rakensi</groupId>
   <artifactId>basex-ner-xar</artifactId>
-  <version>1.0.6</version>
+  <version>1.0.7</version>
 
   <name>Named Entity Recognition for BaseX</name>
   <description>Named Entity Recognition (NER) for BaseX</description>
@@ -30,7 +30,7 @@
 
     <ner.groupId>com.rakensi</ner.groupId>
     <ner.artifactId>XML-NER</ner.artifactId>
-    <ner.version>1.0.7</ner.version>
+    <ner.version>1.0.8</ner.version>
 
   </properties>
 
