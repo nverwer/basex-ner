@@ -22,7 +22,19 @@ Start, or restart BaseX.
 
 ## Using
 
-Enter the following in a new XQuery document.
+The Java function `FuncItem namedEntityRecognition(Object grammar, Map<String, String> options)` is available in XQuery as 
+
+```xquery
+ner:named-entity-recognition($grammar as (xs:string | xs:anyURI), $options as map(xs:string, xs:string))
+  as function((xs:string | element() | document-node())) as node()*
+```
+
+where the `ner` namespace is `com.rakensi.basex.xquery.functions.ner.NamedEntityRecognitionModule`.
+If the input to the returned `function((xs:string | element() | document-node())) as node()*` is a string,
+the output is a sequence of text nodes and elements.
+If the input is an element or a document node, the output has the same type.
+
+As an example, consider the following XQuery document.
 
 ```
 import module namespace ner='com.rakensi.basex.xquery.functions.ner.NamedEntityRecognitionModule';
@@ -37,7 +49,7 @@ let $ner-parse := ner:named-entity-recognition($grammar, map{'match-element-name
 return $ner-parse($input)
 ```
 
-Press the 'Eval' button. The output should look like:
+When this XQuery is run, the output should look like:
 
 ```
 <r>RIC for <ric symbol="♵">vinyl</ric> and <ric symbol="♳">polyethylene</ric></r>
