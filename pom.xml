@@ -5,7 +5,7 @@
 
   <groupId>com.rakensi</groupId>
   <artifactId>basex-ner</artifactId>
-  <version>1.0.9</version>
+  <version>1.0.10</version>
 
   <name>Named Entity Recognition for BaseX</name>
   <description>Named Entity Recognition (NER) for BaseX</description>
@@ -26,7 +26,7 @@
 
     <smax.groupId>org.greenmercury</smax.groupId>
     <smax.artifactId>SMAX</smax.artifactId>
-    <smax.version>1.1.0</smax.version>
+    <smax.version>1.1.1</smax.version>
 
     <ner.groupId>com.rakensi</ner.groupId>
     <ner.artifactId>XML-NER</ner.artifactId>
